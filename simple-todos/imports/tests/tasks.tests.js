@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
 import { assert } from 'meteor/practicalmeteor:chai';
 
-import { Tasks } from './tasks.js';
+import { Tasks } from './api/tasks.js';
 
 if (Meteor.isServer) {
   describe('Tasks', () => {
@@ -29,7 +29,7 @@ if (Meteor.isServer) {
 
         // Set up a fake method invocation that looks like what the method expects
         const invocation = { userId };
- 
+
         // Run the method with `this` set to the fake invocation
         deleteTask.apply(invocation, [taskId]);
 

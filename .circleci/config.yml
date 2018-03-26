@@ -30,6 +30,7 @@ jobs:
       - run: meteor || curl https://install.meteor.com | /bin/sh
       - run: cd simple-todos
       - run: pwd
+      - run: ls -al
       - run: meteor
       - run: echo "Finalizo"
 

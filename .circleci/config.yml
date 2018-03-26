@@ -28,7 +28,7 @@ jobs:
 
       - run: echo "Installing dependencies"
       - run: meteor || curl https://install.meteor.com | /bin/sh
-      - run: cd ~/simple-todos
+      - run: ~/simple-todos/meteor
       - run: pwd
       - run: ls -al
       - run: meteor
@@ -40,4 +40,4 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       # run tests!
-      - run: echo "empty"
+      - run: curl --retry 10 --retry-delay 5 -v http://localhost:52010/ping.json

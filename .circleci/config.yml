@@ -26,11 +26,11 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
+      - run: echo "Installing dependencies"
       - run: meteor || curl https://install.meteor.com | /bin/sh
-      - run: echo "first hello"
-      - run: npm install -g gagarin
-      - run: printf "<Meteor username>\n<Meteor password>\n" | meteor deploy circlecivelocity.meteor.com
-
+      - run: pwd
+      - run: printf "<Meteor username>\n<Meteor password>\n" | meteor deploy todoList.com
+      - run: echo "Finalizo"
 
       - save_cache:
           paths:

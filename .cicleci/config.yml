@@ -26,10 +26,11 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: yarn install
+      - run: meteor || curl https://install.meteor.com | /bin/sh
       - run: echo "first hello"
-      - run: pwd
-      - run: ls -al
+      - run: npm install -g gagarin
+      - run: printf "<Meteor username>\n<Meteor password>\n" | meteor deploy circlecivelocity.meteor.com
+
 
       - save_cache:
           paths:
@@ -37,4 +38,4 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       # run tests!
-      - run: yarn test
+      - run: gagarin -v

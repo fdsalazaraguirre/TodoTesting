@@ -14,29 +14,81 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
 
-    working_directory: ~/TodoTesting/simple-todos
+    working_directory: ~/TodoTesting
 
     steps:
       - checkout
 
-      # Download and cache dependencies
       - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+          key: build-temp-{{ checksum "/simple-todos/.meteor/release" }}-{{ checksum ".circleci/config.yml" }}
+      - restore_cache:
+          key: meteor-release-{{ checksum "/simple-todos/.meteor/release" }}-{{ checksum ".circleci/config.yml" }}
+      - restore_cache:
+          key: meteor-packages-{{ checksum "/simple-todos/.meteor/versions" }}-{{ checksum ".circleci/config.yml" }}
+      - restore_cache:
+          key: npm-packages-{{ checksum "/simple-todos/package.json" }}-{{ checksum ".circleci/config.yml" }}
+      - run:
+          name: install build essentials
+          command: sudo apt-get install -y build-essential
+      - run:
+          name: restore cached meteor bin
+          command: |
+            if [ -e ~/build-temp/meteor-bin ]
+            then
+                echo "Cached Meteor bin found, restoring it"
+                sudo cp ~/build-temp/meteor-bin /usr/local/bin/meteor
+            else
+                echo "No cached Meteor bin found."
+            fi
+      - run:
+          name: install Meteor
+          command: |
+            # only install meteor if bin isn't found
+            command -v meteor >/dev/null 2>&1 || curl https://install.meteor.com | /bin/sh
+      - run:
+          name: check versions
+          command: |
+            echo "Meteor version:"
+            # this forces Meteor to download whatever release your project is using
+            meteor --version
+            which meteor
+            echo "Meteor node version:"
+            meteor node -v
+            echo "Meteor npm version:"
+            meteor npm -v
 
-      - run: echo "Installing dependencies"
-      - run: meteor || curl https://install.meteor.com | /bin/sh
-      - run: pwd
-      - run: ls -al
-      - run: meteor
-      - run: echo "Finalizo"
-
+      - run:
+          name: install npm packages
+          command: meteor npm i
+      #- run:
+      #    name: code linting
+      #    command: meteor npm run lint
+      #- run:
+      #    name: unit tests
+      #    command: meteor npm run test:unit
+      #- run:
+      #    name: start app and run e2e tests
+      #    command: meteor npm run test:e2e-standalone
+      #    no_output_timeout: 5m
+      - run:
+          name: copy meteor bin to build cache
+          command: |
+            mkdir -p ~/build-temp
+            cp /usr/local/bin/meteor ~/build-temp/meteor-bin
       - save_cache:
+          key: build-temp-{{ checksum "/simple-todos/.meteor/release" }}-{{ checksum ".circleci/config.yml" }}
           paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-
-      # run tests!
-      - run: curl --retry 10 --retry-delay 5 -v http://localhost:52010/ping.json
+            - ~/build-temp
+      - save_cache:
+          key: meteor-release-{{ checksum "/simple-todos/.meteor/release" }}-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - ~/.meteor
+      - save_cache:
+          key: meteor-packages-{{ checksum "/simple-todos/.meteor/versions" }}-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - .meteor/
+      - save_cache:
+          key: npm-packages-{{ checksum "/simple-todos/package.json" }}-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - ./node_modules/
+            - ~/.npm/
